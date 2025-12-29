@@ -12,16 +12,19 @@ const CreateSong = () => {
     cover: "",
     audio: "",
   });
+  const [coverPreview, setCoverPreview] = useState("");
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === "cover") setCoverPreview(value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!form.title || !form.artist || !form.audio) {
-      alert("Please fill required fields");
+      alert("Please fill required fields: Title, Artist and Audio");
       return;
     }
 
@@ -33,70 +36,115 @@ const CreateSong = () => {
 
     alert("Song added successfully!");
 
-    setForm({
-      title: "",
-      artist: "",
-      album: "",
-      genre: "",
-      cover: "",
-      audio: "",
-    });
+    setForm({ title: "", artist: "", album: "", genre: "", cover: "", audio: "" });
+    setCoverPreview("");
   };
 
   return (
-    <div className="admin-page">
-      <h2>Create Song</h2>
+    <div className="max-w-3xl mx-auto p-6 bg-slate-900 rounded-lg shadow-md text-white">
+      <h2 className="text-2xl font-semibold mb-4">Create Song</h2>
 
-      <form onSubmit={handleSubmit} className="song-form">
-        <input
-          type="text"
-          name="title"
-          placeholder="Song Title"
-          value={form.title}
-          onChange={handleChange}
-        />
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
+        <div>
+          <label className="text-sm text-gray-300">Title <span className="text-red-400">*</span></label>
+          <input
+            type="text"
+            name="title"
+            placeholder="Song Title"
+            value={form.title}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
 
-        <input
-          type="text"
-          name="artist"
-          placeholder="Artist Name"
-          value={form.artist}
-          onChange={handleChange}
-        />
+        <div>
+          <label className="text-sm text-gray-300">Artist <span className="text-red-400">*</span></label>
+          <input
+            type="text"
+            name="artist"
+            placeholder="Artist Name"
+            value={form.artist}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
 
-        <input
-          type="text"
-          name="album"
-          placeholder="Album Name"
-          value={form.album}
-          onChange={handleChange}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm text-gray-300">Album</label>
+            <input
+              type="text"
+              name="album"
+              placeholder="Album Name"
+              value={form.album}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-        <input
-          type="text"
-          name="genre"
-          placeholder="Genre"
-          value={form.genre}
-          onChange={handleChange}
-        />
+          <div>
+            <label className="text-sm text-gray-300">Genre</label>
+            <input
+              type="text"
+              name="genre"
+              placeholder="Genre"
+              value={form.genre}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
 
-        <input
-          type="text"
-          name="cover"
-          placeholder="Cover Image URL"
-          value={form.cover}
-          onChange={handleChange}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          <div>
+            <label className="text-sm text-gray-300">Cover Image URL</label>
+            <input
+              type="text"
+              name="cover"
+              placeholder="https://.../cover.jpg"
+              value={form.cover}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
 
-        <input
-          type="text"
-          name="audio"
-          placeholder="Audio File URL"
-          value={form.audio}
-          onChange={handleChange}
-        />
+            {coverPreview ? (
+              <div className="mt-3">
+                <p className="text-xs text-gray-300 mb-2">Cover preview:</p>
+                <img src={coverPreview} alt="cover preview" className="w-32 h-32 object-cover rounded shadow" onError={(e)=>e.currentTarget.style.display='none'} />
+              </div>
+            ) : null}
+          </div>
 
-        <button type="submit">Add Song</button>
+          <div>
+            <label className="text-sm text-gray-300">Audio File URL <span className="text-red-400">*</span></label>
+            <input
+              type="text"
+              name="audio"
+              placeholder="https://.../song.mp3"
+              value={form.audio}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <p className="text-xs text-gray-400 mt-2">Paste a publicly accessible audio URL or add later.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-2">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white font-medium shadow"
+          >
+            Add Song
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setForm({ title: "", artist: "", album: "", genre: "", cover: "", audio: "" }); setCoverPreview(""); }}
+            className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-gray-200"
+          >
+            Reset
+          </button>
+        </div>
       </form>
     </div>
   );
