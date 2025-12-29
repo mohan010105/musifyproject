@@ -13,11 +13,36 @@ const CreateSong = () => {
     audio: "",
   });
   const [coverPreview, setCoverPreview] = useState("");
+  const [coverObjectUrl, setCoverObjectUrl] = useState(null);
+  const [audioObjectUrl, setAudioObjectUrl] = useState(null);
+  const [audioName, setAudioName] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (name === "cover") setCoverPreview(value);
+  };
+
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+
+    if (name === 'cover') {
+      if (coverObjectUrl) URL.revokeObjectURL(coverObjectUrl);
+      const url = URL.createObjectURL(file);
+      setCoverObjectUrl(url);
+      setCoverPreview(url);
+      setForm((prev) => ({ ...prev, cover: url }));
+    }
+
+    if (name === 'audio') {
+      if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
+      const url = URL.createObjectURL(file);
+      setAudioObjectUrl(url);
+      setAudioName(file.name || 'audio');
+      setForm((prev) => ({ ...prev, audio: url }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -36,8 +61,19 @@ const CreateSong = () => {
 
     alert("Song added successfully!");
 
+    // revoke object URLs to avoid leaks
+    if (coverObjectUrl) {
+      URL.revokeObjectURL(coverObjectUrl);
+      setCoverObjectUrl(null);
+    }
+    if (audioObjectUrl) {
+      URL.revokeObjectURL(audioObjectUrl);
+      setAudioObjectUrl(null);
+    }
+
     setForm({ title: "", artist: "", album: "", genre: "", cover: "", audio: "" });
     setCoverPreview("");
+    setAudioName("");
   };
 
   return (
@@ -99,12 +135,11 @@ const CreateSong = () => {
           <div>
             <label className="text-sm text-gray-300">Cover Image URL</label>
             <input
-              type="text"
+              type="file"
               name="cover"
-              placeholder="https://.../cover.jpg"
-              value={form.cover}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="mt-1 block w-full text-sm text-gray-200 file:bg-slate-700 file:px-3 file:py-1 file:rounded file:border-0 file:text-sm"
             />
 
             {coverPreview ? (
@@ -118,14 +153,16 @@ const CreateSong = () => {
           <div>
             <label className="text-sm text-gray-300">Audio File URL <span className="text-red-400">*</span></label>
             <input
-              type="text"
+              type="file"
               name="audio"
-              placeholder="https://.../song.mp3"
-              value={form.audio}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              accept="audio/*"
+              onChange={handleFileChange}
+              className="mt-1 block w-full text-sm text-gray-200 file:bg-slate-700 file:px-3 file:py-1 file:rounded file:border-0 file:text-sm"
             />
-            <p className="text-xs text-gray-400 mt-2">Paste a publicly accessible audio URL or add later.</p>
+            {audioName ? <p className="text-xs text-gray-300 mt-2">Selected: {audioName}</p> : <p className="text-xs text-gray-400 mt-2">Choose an audio file (mp3, wav).</p>}
+            {form.audio ? (
+              <audio controls src={form.audio} className="mt-2 w-full" />
+            ) : null}
           </div>
         </div>
 
