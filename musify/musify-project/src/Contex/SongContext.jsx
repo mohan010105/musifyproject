@@ -109,14 +109,46 @@ export const SongProvider = ({ children }) => {
     } else {
       // Resolve audio URL to backend host when needed (local /songs/... paths)
       let src = song.audioUrl || song.audio || '';
-      if (src && src.startsWith('/')) {
+      if (!src) {
+        console.warn('No audio source found for song', song);
+        return;
+      }
+      if (src.startsWith('/')) {
         // If the path is relative to server (e.g. /songs/file.mp3), prefix API_BASE
         src = `${API_BASE}${src}`;
       }
-      audioRef.current.crossOrigin = 'anonymous';
+      // Only set crossOrigin for remote absolute URLs
+      if (src.startsWith('http://') || src.startsWith('https://')) {
+        audioRef.current.crossOrigin = 'anonymous';
+      } else {
+        try {
+          // reset crossOrigin for blob: or data: URLs
+          // @ts-ignore
+          audioRef.current.removeAttribute && audioRef.current.removeAttribute('crossorigin');
+        } catch (e) {}
+      }
+
+      // Ensure we reset the audio element before loading new src
+      try {
+        audioRef.current.pause();
+      } catch (e) {}
       audioRef.current.src = src;
+      // call load to ensure the browser recognizes the new source (helps with blobs/data URLs)
+      try {
+        audioRef.current.load();
+      } catch (e) {}
+
       audioRef.current.play().catch(err => {
-        console.error('Playback failed:', err);
+        console.error('Playback failed for src', src, err);
+        // Attempt a fallback: try removing src and setting again then play
+        try {
+          const prev = audioRef.current.src;
+          audioRef.current.src = '';
+          audioRef.current.src = prev;
+          audioRef.current.play().catch(e => console.error('Fallback play failed', e));
+        } catch (e) {
+          console.error('Fallback playback attempt failed', e);
+        }
       });
       setCurrentSong(song);
       setIsPlaying(true);
