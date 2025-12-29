@@ -140,14 +140,30 @@ export const SongProvider = ({ children }) => {
 
       audioRef.current.play().catch(err => {
         console.error('Playback failed for src', src, err);
-        // Attempt a fallback: try removing src and setting again then play
-        try {
-          const prev = audioRef.current.src;
-          audioRef.current.src = '';
-          audioRef.current.src = prev;
-          audioRef.current.play().catch(e => console.error('Fallback play failed', e));
-        } catch (e) {
-          console.error('Fallback playback attempt failed', e);
+        // If browser reports NotSupportedError, try creating a fresh Audio element as a fallback
+        if (err && err.name === 'NotSupportedError') {
+          try {
+            const fallback = new Audio();
+            fallback.src = src;
+            // keep same volume
+            fallback.volume = audioRef.current.volume;
+            // replace audioRef.current so future controls act on the working element
+            audioRef.current = fallback;
+            // attach timeupdate to keep progress state in sync
+            fallback.addEventListener('timeupdate', () => {
+              try {
+                setProgress((fallback.currentTime / fallback.duration) * 100);
+              } catch (e) {}
+            });
+            fallback.play().then(() => {
+              setCurrentSong(song);
+              setIsPlaying(true);
+            }).catch(fbErr => {
+              console.error('Fallback audio play failed', fbErr);
+            });
+          } catch (fbErr) {
+            console.error('Fallback playback attempt failed', fbErr);
+          }
         }
       });
       setCurrentSong(song);
