@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
+import { useSongs } from '../../Contex/SongContext';
 
 const samplePodcasts = [
   {
@@ -28,28 +29,25 @@ const samplePodcasts = [
 ];
 
 const Podcasts = () => {
-  const audioRef = useRef(null);
-  const [current, setCurrent] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { playSong, togglePlayPause, currentSong, isPlaying } = useSongs();
   const [subscriptions, setSubscriptions] = useState([]);
 
-  const togglePlay = (pod) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (current && current.id === pod.id) {
-      if (isPlaying) {
-        audio.pause();
-        setIsPlaying(false);
-      } else {
-        audio.play();
-        setIsPlaying(true);
-      }
+  const handlePlayPodcast = (pod) => {
+    // If the same podcast is playing, toggle play/pause
+    if (currentSong?.id === pod.id) {
+      togglePlayPause();
     } else {
-      setCurrent(pod);
-      audio.src = pod.src;
-      audio.play();
-      setIsPlaying(true);
+      // Play the new podcast
+      const podcastSong = {
+        id: pod.id,
+        title: pod.title,
+        artist: pod.host,
+        audio: pod.src,
+        image: pod.image,
+        source: 'podcast',
+        type: 'podcast'
+      };
+      playSong(podcastSong);
     }
   };
 
@@ -75,10 +73,10 @@ const Podcasts = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => togglePlay(pod)}
+                    onClick={() => handlePlayPodcast(pod)}
                     className="px-3 py-1 bg-indigo-600 rounded"
                   >
-                    {current && current.id === pod.id && isPlaying ? 'Pause' : 'Play'}
+                    {currentSong?.id === pod.id && isPlaying ? 'Pause' : 'Play'}
                   </button>
                   <button
                     onClick={() => toggleSubscribe(pod.id)}
@@ -93,7 +91,7 @@ const Podcasts = () => {
         ))}
       </div>
 
-      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
+
     </div>
   );
 };

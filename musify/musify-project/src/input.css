@@ -1,1 +1,35 @@
 @import "tailwindcss";
+
+/* Custom slider styles for Spotify-like appearance */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+.slider::-webkit-slider-track {
+  background: #535353;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.slider::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+.slider::-moz-range-track {
+  background: #535353;
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+}

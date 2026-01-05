@@ -5,7 +5,7 @@ import AdminSidebar from './AdminSidebar'
 
 const AdminContainer = () => {
   return (
-    <section className='w-full h-[calc(100vh-70px)] flex bg-slate-800 overflow-auto'> 
+    <section className='w-full h-[calc(100vh-70px)] flex bg-slate-800'>
     
     <AdminSidebar/>   
     <AdminContent/>

@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root{
+  --bg: #121212;
+  --text: #FFFFFF;
+  --accent: #1DB954;
+  --muted: #B3B3B3;
+}
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.container{padding:24px}
+.app-header{
+  display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid rgba(255,255,255,0.04)
+}
+.brand a{color:var(--text);text-decoration:none;font-weight:700;font-size:18px}
+.main-nav a{color:var(--muted);text-decoration:none;margin-left:12px}
+.main-nav a:hover{color:var(--text)}
+.app-main{padding-bottom:120px;min-height:calc(100vh - 160px)}
+
+.page h1{margin:8px 0 16px}
+.subnav a{color:var(--muted);margin-right:12px;text-decoration:none}
+.song-list{list-style:none;padding:0;margin:0}
+.song-list li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.song-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;list-style:none;padding:0}
+.song-card{background:#181818;padding:12px;border-radius:8px}
+
+.footer-player{
+  position:fixed;left:0;right:0;bottom:0;height:88px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.8));display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.04)
+}
+.fp-left{width:25%;}
+.fp-center{width:50%;display:flex;flex-direction:column;align-items:center}
+.fp-right{width:25%;display:flex;justify-content:flex-end;align-items:center}
+.fp-controls button{background:none;border:0;color:var(--text);font-size:18px;margin:0 8px;cursor:pointer}
+.fp-progress{display:flex;align-items:center;width:100%;gap:12px}
+.fp-progress input[type=range]{flex:1}
+.fp-track .fp-title{font-weight:600}
+.time{font-size:12px;color:var(--muted)}
+
+/* small screens */
+@media (max-width:640px){
+  .fp-left{display:none}
+  .fp-right{width:35%}
+  .fp-center{width:65%}
+}

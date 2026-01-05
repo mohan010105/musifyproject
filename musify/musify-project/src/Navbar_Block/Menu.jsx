@@ -76,22 +76,9 @@ const Menu = () => {
             className="relative px-4 py-2 text-white font-bold rounded-md flex items-center justify-center space-x-2 transition-all duration-300 ease-in-out transform hover:scale-105 hover:bg-blue-800 active:scale-95"
             onClick={startLogout}
           >
-            <motion.div
-              initial={{ x: 0 }}
-              animate={isLoggingOut ? { x: 50, opacity: 0 } : { x: 0, opacity: 1 }}
-              transition={{ duration: 1 }}
-              className="flex items-center"
-            >
-              <FaUser className="mr-2" size={18} />
-            </motion.div>
+            <FaUser className="mr-2" size={18} />
             <NavLink to="/home">Logout</NavLink>
-            <motion.div
-              initial={{ x: -10 }}
-              animate={isLoggingOut ? { x: 30, opacity: 1 } : { x: -10, opacity: 0 }}
-              transition={{ duration: 1 }}
-            >
-              <FaSignOutAlt size={18} />
-            </motion.div>
+            <FaSignOutAlt size={18} />
           </button>
         </li>
       </>
@@ -122,6 +109,11 @@ const Menu = () => {
           Home
         </NavLink>
       </li>
+      {/* <li>
+        <NavLink to="/classical" className="px-3 py-2 hover:bg-blue-800 rounded-md flex">
+          Classical
+        </NavLink>
+      </li> */}
       {user ? <AuthenticatedUser /> : <AnonymousUser />}
     </ul>
   );

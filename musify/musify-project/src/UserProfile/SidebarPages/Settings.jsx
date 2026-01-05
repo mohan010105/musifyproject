@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../Contex/ThemeContext";
+import { useSubscription } from "../../Contex/SubscriptionContext";
+import { useAuth } from "../../Contex/AuthContex";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { DB } from "../../Backend/Firebase";
 
 const translations = {
   English: {
@@ -99,18 +105,58 @@ const translations = {
 };
 
 const Settings = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("English");
+  const navigate = useNavigate();
+  const { darkMode, language, toggleDarkMode, changeLanguage, loading: themeLoading } = useTheme();
+  const { subscription, hasPremiumAccess } = useSubscription();
+  const { authUser } = useAuth();
+  const [privacySettings, setPrivacySettings] = useState({
+    profilePrivate: false,
+    allowRequests: true
+  });
 
+  // Load privacy settings from Firestore
+  useEffect(() => {
+    const loadPrivacySettings = async () => {
+      if (!authUser?.uid) return;
 
-  // useEffect(() => {
-  //   document.body.style.overflow = "hidden";
-  //   return () => {
-  //     document.body.style.overflow = "auto";
-  //   };
-  // }, []);
+      try {
+        const userDocRef = doc(DB, 'users', authUser.uid);
+        const userDoc = await getDoc(userDocRef);
 
-  const t = translations[language]; 
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.privacySettings) {
+            setPrivacySettings(userData.privacySettings);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading privacy settings:', error);
+      }
+    };
+
+    loadPrivacySettings();
+  }, [authUser]);
+
+  // Save privacy settings to Firestore
+  const updatePrivacySetting = async (key, value) => {
+    if (!authUser?.uid) return;
+
+    const newSettings = { ...privacySettings, [key]: value };
+    setPrivacySettings(newSettings);
+
+    try {
+      const userDocRef = doc(DB, 'users', authUser.uid);
+      await setDoc(userDocRef, { privacySettings: newSettings }, { merge: true });
+    } catch (error) {
+      console.error('Error updating privacy settings:', error);
+    }
+  };
+
+  const t = translations[language];
+
+  if (themeLoading) {
+    return <div className="w-full min-h-screen flex items-center justify-center text-white">Loading...</div>;
+  }
 
   return (
     <div className="w-full min-h-screen flex flex-col items-center text-white p-6 bg-gray-900">
@@ -123,7 +169,7 @@ const Settings = () => {
           <select
             className="mt-2 p-2 rounded-md bg-gray-700 text-white w-full"
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={(e) => changeLanguage(e.target.value)}
           >
             <option value="English">English</option>
             <option value="Tamil">தமிழ்</option>
@@ -142,7 +188,7 @@ const Settings = () => {
               className={`px-4 py-1 rounded-md ${
                 darkMode ? "bg-blue-500" : "bg-gray-500"
               }`}
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleDarkMode}
             >
               {darkMode ? "On" : "Off"}
             </button>
@@ -154,21 +200,48 @@ const Settings = () => {
           <h2 className="text-xl font-semibold">{t.privacy}</h2>
           <div className="flex justify-between items-center mt-2">
             <span>{t.makeProfilePrivate}</span>
-            <button className="px-4 py-1 bg-gray-500 rounded-md">Off</button>
+            <button
+              className={`px-4 py-1 rounded-md ${
+                privacySettings.profilePrivate ? "bg-green-500" : "bg-gray-500"
+              }`}
+              onClick={() => updatePrivacySetting('profilePrivate', !privacySettings.profilePrivate)}
+            >
+              {privacySettings.profilePrivate ? "On" : "Off"}
+            </button>
           </div>
           <div className="flex justify-between items-center mt-3">
             <span>{t.allowRequests}</span>
-            <button className="px-4 py-1 bg-green-500 rounded-md">On</button>
+            <button
+              className={`px-4 py-1 rounded-md ${
+                privacySettings.allowRequests ? "bg-green-500" : "bg-gray-500"
+              }`}
+              onClick={() => updatePrivacySetting('allowRequests', !privacySettings.allowRequests)}
+            >
+              {privacySettings.allowRequests ? "On" : "Off"}
+            </button>
           </div>
         </div>
 
         {/* Account Details */}
         <div className="w-full bg-gray-800 p-4 rounded-lg shadow-lg">
           <h2 className="text-xl font-semibold">{t.account}</h2>
-          <p className="mt-2">{t.email}: user@example.com</p>
+          <p className="mt-2">{t.email}: mohanraj05@gmail.com</p>
           <p>
-            {t.subscription}: Free (<span className="text-blue-500">{t.upgrade}</span>)
+            {t.subscription}: {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
+            {subscription.plan === 'free' && (
+              <span
+                className="text-blue-500 ml-2 cursor-pointer hover:underline"
+                onClick={() => navigate('/payment')}
+              >
+                ({t.upgrade})
+              </span>
+            )}
           </p>
+          {hasPremiumAccess() && (
+            <p className="text-sm text-green-400 mt-1">
+              Premium until: {subscription.endDate?.toLocaleDateString()}
+            </p>
+          )}
         </div>
       </div>
 

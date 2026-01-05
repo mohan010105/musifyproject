@@ -15,6 +15,36 @@ const ChangePassword = () => {
   const auth = getAuth();
   const user = auth.currentUser;
 
+  // Password validation function
+  const validatePassword = (password) => {
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+    if (!hasUpperCase) {
+      setMessage("Password must contain at least one uppercase letter");
+      setIsSuccess(false);
+      return false;
+    }
+    if (!hasLowerCase) {
+      setMessage("Password must contain at least one lowercase letter");
+      setIsSuccess(false);
+      return false;
+    }
+    if (!hasNumbers) {
+      setMessage("Password must contain at least one number");
+      setIsSuccess(false);
+      return false;
+    }
+    if (!hasSpecialChar) {
+      setMessage("Password must contain at least one special character");
+      setIsSuccess(false);
+      return false;
+    }
+    return true;
+  };
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -23,6 +53,11 @@ const ChangePassword = () => {
     if (!user) {
       setMessage("User not authenticated");
       setIsSuccess(false);
+      return;
+    }
+
+    // Validate new password requirements
+    if (!validatePassword(newPassword)) {
       return;
     }
 

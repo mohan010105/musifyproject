@@ -26,11 +26,42 @@ const Register = () => {
   }
 
 
+  // Password validation function
+  const validatePassword = (password) => {
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+    if (!hasUpperCase) {
+      toast.error("Password must contain at least one uppercase letter");
+      return false;
+    }
+    if (!hasLowerCase) {
+      toast.error("Password must contain at least one lowercase letter");
+      return false;
+    }
+    if (!hasNumbers) {
+      toast.error("Password must contain at least one number");
+      return false;
+    }
+    if (!hasSpecialChar) {
+      toast.error("Password must contain at least one special character");
+      return false;
+    }
+    return true;
+  };
+
   async function handlesubmit(e) {
     e.preventDefault();
 
     if (!username || !useremail || !userpassword || !userconfirmpassword) {
       toast.error("All fields are required");
+      return;
+    }
+
+    // Validate password requirements
+    if (!validatePassword(userpassword)) {
       return;
     }
 

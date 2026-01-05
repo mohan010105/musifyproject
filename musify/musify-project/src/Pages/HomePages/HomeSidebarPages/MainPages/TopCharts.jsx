@@ -1,69 +1,40 @@
-import React, { useEffect, useState } from "react";
-// import { DB } from "../../Backend/Firebase";
-import { collection, getDocs } from "firebase/firestore";
-import { SiApplemusic } from "react-icons/si";
-import { NavLink } from "react-router-dom";
-import { DB } from "../../../../Backend/Firebase";
+import React from 'react';
+import { useSongs } from '../../../../Contex/SongContext';
 
 const TopCharts = () => {
-  let [album, setAlbum] = useState();
+  const ctx = useSongs();
+  const songs = ctx.songs || [];
 
-  useEffect(() => {
-    async function fetchAlbum() {
-      try {
-        let albumCollection = collection(DB, "music_musify");
-        let albumData = await getDocs(albumCollection);
-        console.log(albumData.docs.data);
+  // Filter for top charts
+  const topCharts = songs.filter(song => song.category === 'topcharts');
 
-        let newAlbumData = albumData.docs.map((album) => ({
-          ...album.data(),
-        }));
-
-        // console.log(newAlbumData);
-        setAlbum(newAlbumData);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-    fetchAlbum();
-  }, []);
-
-  console.log(album);
-   return (
-    <section className="w-[80vw] text-white">
-      {album && (
-        <article className="w-full p-3 flex flex-col">
-          <header className="flex items-center gap-2 p-3">
-            <span className="text-3xl">
-              <SiApplemusic />
-            </span>
-            <h1 className="text-2xl font-bold">Popular TopCharts</h1>
-          </header>
-          <main className="p-3 flex gap-5">
-            {album?.map((data, index) => {
-              return (
-                <NavLink
-                  key={index}
-                  to={`albumDetails/${data?.title}`}
-                  state={data}
-                >
-                  <div className="px-3 bg-black/50 w-[250px] h-[300px] py-5 rounded-lg flex flex-col items-center hover:bg-black/70 hover:ring-1 hover:ring-[wheat]">
-                    <img
-                      src={data?.Thumbnail}
-                      alt={data?.title}
-                      className="w-[220px] h-[250px] object-cover hover:rounded hover:scale-105 transition-all duration-100 ease-linear"
-                    />
-                    <h1 className="text-white text-2xl text-center py-1 px-14 bg-black mt-3 rounded-md ">
-                      {data?.title}
-                    </h1>
-                  </div>
-                </NavLink>
-              );
-            })}
-          </main>
-        </article>
-      ) }
-    </section>
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Top Charts</h2>
+      {topCharts.length === 0 ? (
+        <p className="text-gray-400">No top charts available.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {topCharts.map((song) => (
+            <div key={song.id} className="bg-gray-800 p-4 rounded-lg hover:bg-gray-700 transition">
+              <img
+                src={song.image || '/default-album.png'}
+                alt={song.title}
+                className="w-full h-32 object-cover rounded mb-3"
+              />
+              <h3 className="font-semibold text-sm mb-1 truncate">{song.title}</h3>
+              <p className="text-xs text-gray-400 truncate">{song.artist}</p>
+              <button
+                onClick={() => ctx.playSong(song)}
+                className="mt-2 w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded text-sm"
+              >
+                {ctx.currentSong?.id === song.id && ctx.isPlaying ? 'Pause' : 'Play'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -9,7 +9,8 @@ const CreateSong = () => {
     artist: "",
     album: "",
     genre: "",
-    cover: "",
+    category: "newreleases",
+    image: "",
     audio: "",
   });
   const [coverPreview, setCoverPreview] = useState("");
@@ -20,7 +21,7 @@ const CreateSong = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    if (name === "cover") setCoverPreview(value);
+    if (name === "image") setCoverPreview(value);
   };
 
   const handleFileChange = (e) => {
@@ -28,20 +29,24 @@ const CreateSong = () => {
     if (!files || files.length === 0) return;
     const file = files[0];
 
-    if (name === 'cover') {
-      if (coverObjectUrl) URL.revokeObjectURL(coverObjectUrl);
-      const url = URL.createObjectURL(file);
-      setCoverObjectUrl(url);
-      setCoverPreview(url);
-      setForm((prev) => ({ ...prev, cover: url }));
+    if (name === 'image') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        setCoverPreview(dataUrl);
+        setForm((prev) => ({ ...prev, image: dataUrl }));
+      };
+      reader.readAsDataURL(file);
     }
 
     if (name === 'audio') {
-      if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
-      const url = URL.createObjectURL(file);
-      setAudioObjectUrl(url);
-      setAudioName(file.name || 'audio');
-      setForm((prev) => ({ ...prev, audio: url }));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        setAudioName(file.name || 'audio');
+        setForm((prev) => ({ ...prev, audio: dataUrl }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -56,22 +61,16 @@ const CreateSong = () => {
     addSong({
       id: Date.now(),
       ...form,
+      source: 'admin',
       createdAt: new Date().toISOString(),
     });
 
     alert("Song added successfully!");
 
-    // revoke object URLs to avoid leaks
-    if (coverObjectUrl) {
-      URL.revokeObjectURL(coverObjectUrl);
-      setCoverObjectUrl(null);
-    }
-    if (audioObjectUrl) {
-      URL.revokeObjectURL(audioObjectUrl);
-      setAudioObjectUrl(null);
-    }
+    // Note: Keeping object URLs alive for the session to allow playback and image display
+    // They will be cleaned up when the page is reloaded or closed
 
-    setForm({ title: "", artist: "", album: "", genre: "", cover: "", audio: "" });
+    setForm({ title: "", artist: "", album: "", genre: "", category: "newreleases", image: "", audio: "" });
     setCoverPreview("");
     setAudioName("");
   };
@@ -105,7 +104,7 @@ const CreateSong = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm text-gray-300">Album</label>
             <input
@@ -129,14 +128,31 @@ const CreateSong = () => {
               className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+
+          <div>
+            <label className="text-sm text-gray-300">Category</label>
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="newreleases">Select</option>
+              <option value="newreleases">New Releases</option>
+              <option value="topcharts">Top Charts</option>
+              <option value="playlists">Playlists</option>
+              {/* <option value="podcasts">Podcasts</option> */}
+              <option value="radio">Radio</option>
+            </select>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           <div>
-            <label className="text-sm text-gray-300">Cover Image URL</label>
+            <label className="text-sm text-gray-300">Cover Image</label>
             <input
               type="file"
-              name="cover"
+              name="image"
               accept="image/*"
               onChange={handleFileChange}
               className="mt-1 block w-full text-sm text-gray-200 file:bg-slate-700 file:px-3 file:py-1 file:rounded file:border-0 file:text-sm"
@@ -151,7 +167,7 @@ const CreateSong = () => {
           </div>
 
           <div>
-            <label className="text-sm text-gray-300">Audio File URL <span className="text-red-400">*</span></label>
+            <label className="text-sm text-gray-300">Audio File <span className="text-red-400">*</span></label>
             <input
               type="file"
               name="audio"
@@ -176,7 +192,7 @@ const CreateSong = () => {
 
           <button
             type="button"
-            onClick={() => { setForm({ title: "", artist: "", album: "", genre: "", cover: "", audio: "" }); setCoverPreview(""); }}
+            onClick={() => { setForm({ title: "", artist: "", album: "", genre: "", category: "newreleases", image: "", audio: "" }); setCoverPreview(""); }}
             className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-gray-200"
           >
             Reset

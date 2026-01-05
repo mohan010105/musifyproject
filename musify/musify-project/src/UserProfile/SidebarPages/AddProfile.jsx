@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { DB } from "./Firebase";
+import { DB } from "../../Backend/Firebase";
 import { collection, getDocs, addDoc, updateDoc, query, where, doc } from "firebase/firestore";
+import { useAuth } from "../../Contex/AuthContex";
+import { useSubscription } from "../../Contex/SubscriptionContext";
 
 const AddProfile = () => {
+  const { authUser } = useAuth();
+  const { userData } = useSubscription();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -20,6 +24,13 @@ const AddProfile = () => {
 
   const [profileId, setProfileId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Set email from authenticated user
+    if (authUser?.email && !formData.email) {
+      setFormData(prev => ({ ...prev, email: authUser.email }));
+    }
+  }, [authUser]);
 
   useEffect(() => {
     const fetchProfile = async () => {
