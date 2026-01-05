@@ -47,7 +47,7 @@ const CreatePodcast = () => {
       return;
     }
 
-    const podcastWithId = {
+    const podcastWithId = { 
       ...form,
       id: Date.now().toString(),
       type: "podcast"
